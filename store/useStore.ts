@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import React from 'react';
 
 interface Track {
   id: string;
@@ -14,18 +15,22 @@ interface NeuralState {
   user: any | null;
   profile: any | null;
   dna_xp: number;
-  
+
   // Audio State
   currentTrack: Track | null;
   isPlaying: boolean;
   volume: number;
   analyser: AnalyserNode | null;
-  
+
   // Realm Geometry
   realmType: number;
   activeRealm: string;
   dnaSeed: string;
   particleCount: number;
+
+  // Hydration flag
+  _hasHydrated?: boolean;
+  setHasHydrated?: (state: boolean) => void;
 
   // Actions
   setAuth: (user: any, profile: any) => void;
@@ -52,10 +57,11 @@ export const useStore = create<NeuralState>()(
       activeRealm: 'NEURAL_CORE',
       dnaSeed: '0x000000',
       particleCount: 15000,
+      _hasHydrated: false,
 
       // Actions
       setAuth: (user, profile) => set({ user, profile }),
-      
+
       addXp: (amount) => set((state) => ({ dna_xp: state.dna_xp + amount })),
 
       setTrack: (track) => {
@@ -63,15 +69,15 @@ export const useStore = create<NeuralState>()(
         const seed = '0x' + Array.from(track.title)
           .reduce((acc, char) => acc + char.charCodeAt(0), 0)
           .toString(16).padStart(6, '0');
-        
+
         set({ currentTrack: track, dnaSeed: seed, isPlaying: true });
       },
 
-      togglePlay: (state) => set((prev) => ({ 
-        isPlaying: state !== undefined ? state : !prev.isPlaying 
+      togglePlay: (state) => set((prev) => ({
+        isPlaying: state !== undefined ? state : !prev.isPlaying
       })),
 
-      setVolume: (val) => set({ volume: val }),
+      setVolume: (val) => set({ volume: Math.max(0, Math.min(1, val)) }),
 
       setAnalyser: (node) => set({ analyser: node }),
 
@@ -83,18 +89,47 @@ export const useStore = create<NeuralState>()(
         ];
         set({ realmType: type, activeRealm: realms[type] || 'UNKNOWN_SECTOR' });
       },
+
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
       name: 'neural-vault-storage', // Key in LocalStorage
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => {
+        // Only use localStorage on client side
+        if (typeof window === 'undefined') {
+          return {
+            getItem: () => null,
+            setItem: () => {},
+            removeItem: () => {},
+          };
+        }
+        return localStorage;
+      }),
       // Only persist these specific fields (Don't persist the AnalyserNode or Audio state)
-      partialize: (state) => ({ 
+      partialize: (state) => ({
         dna_xp: state.dna_xp,
         realmType: state.realmType,
         activeRealm: state.activeRealm,
         volume: state.volume,
         dnaSeed: state.dnaSeed
       }),
+      // Hydration callback
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHasHydrated?.(true);
+        }
+      },
     }
   )
 );
+
+// Hook to check if store has hydrated (for SSR safety)
+export const useHasHydrated = () => {
+  const [hasHydrated, setHasHydrated] = React.useState(false);
+
+  React.useEffect(() => {
+    setHasHydrated(useStore.persist.getOptions().getStorage?.() !== undefined);
+  }, []);
+
+  return hasHydrated;
+};
