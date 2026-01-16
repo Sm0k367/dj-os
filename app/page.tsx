@@ -1,40 +1,54 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import HUD from '@/components/HUD/Dashboard';
-import AudioEngine from '@/components/Audio/AudioEngine';
-import UserNode from '@/components/HUD/UserNode';
+import React from 'react';
 
-// 1. DYNAMIC IMPORT: This is the crucial fix for Vercel
-// We disable SSR (Server Side Rendering) for the 3D Canvas
+/**
+ * VERCEL FIX: 
+ * We must use dynamic imports with { ssr: false } for any component 
+ * that uses Three.js or Web Audio API. This prevents the "window is 
+ * not defined" error during the Vercel build process.
+ */
+
 const NeuralCanvas = dynamic(() => import('@/components/NeuralCanvas'), { 
   ssr: false,
   loading: () => (
-    <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-[100]">
-      <div className="w-12 h-12 border-2 border-neon border-t-transparent rounded-full animate-spin mb-4" />
-      <p className="text-neon font-mono text-[10px] tracking-[0.3em] animate-pulse">
-        INITIALIZING_NEURAL_CORE...
-      </p>
+    <div className="fixed inset-0 bg-black flex items-center justify-center">
+      <div className="text-neon font-mono text-xs animate-pulse">
+        BOOTING_NEURAL_ENGINE...
+      </div>
     </div>
   )
+});
+
+const HUD = dynamic(() => import('@/components/HUD/Dashboard'), { 
+  ssr: false 
+});
+
+const UserNode = dynamic(() => import('@/components/HUD/UserNode'), { 
+  ssr: false 
+});
+
+const AudioEngine = dynamic(() => import('@/components/Audio/AudioEngine'), { 
+  ssr: false 
 });
 
 export default function Home() {
   return (
     <main className="relative h-screen w-full bg-black overflow-hidden">
-      {/* The 3D Engine - Only loads on the client */}
+      {/* 3D Visual Layer */}
       <NeuralCanvas />
 
-      {/* The Audio Engine - Logic only */}
+      {/* Logic Layer (Audio processing) */}
       <AudioEngine />
 
-      {/* Interface Layers */}
-      <div className="relative z-10">
+      {/* Interface Layer */}
+      <div className="relative z-10 pointer-events-none">
         <UserNode />
         <HUD />
       </div>
 
-      {/* Background Ambience */}
+      {/* Global Background Ambience */}
       <div className="fixed inset-0 bg-[radial-gradient(circle_at_center,rgba(0,242,255,0.05)_0%,transparent_70%)] pointer-events-none" />
     </main>
   );
