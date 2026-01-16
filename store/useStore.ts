@@ -1,65 +1,100 @@
+'use client';
+
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
-interface NeuralState {
-  // --- AUTH & PROFILE ---
-  user: any | null;
-  profile: any | null;
-  setAuth: (user: any, profile: any) => void;
-
-  // --- AUDIO ENGINE ---
-  isPlaying: boolean;
-  currentTrack: {
-    title: string;
-    url: string;
-    id: string;
-  } | null;
-  volume: number;
-  analyser: AnalyserNode | null;
-  setTrack: (track: any) => void;
-  setAnalyser: (analyser: AnalyserNode) => void;
-  togglePlay: (val?: boolean) => void;
-
-  // --- MULTIVERSE SETTINGS ---
-  activeRealm: string;
-  realmType: number; // 0-11 for the 12+ types
-  dnaSeed: string;
-  particleCount: number;
-  setRealm: (type: number, title: string) => void;
-
-  // --- UI CONTROLS ---
-  isPosterMode: boolean;
-  activeTab: 'visualizer' | 'gallery' | 'editor' | 'profile';
-  setTab: (tab: any) => void;
+interface Track {
+  id: string;
+  title: string;
+  url: string;
 }
 
-export const useStore = create<NeuralState>((set) => ({
-  user: null,
-  profile: null,
-  setAuth: (user, profile) => set({ user, profile }),
+interface NeuralState {
+  // Auth & Profile
+  user: any | null;
+  profile: any | null;
+  dna_xp: number;
+  
+  // Audio State
+  currentTrack: Track | null;
+  isPlaying: boolean;
+  volume: number;
+  analyser: AnalyserNode | null;
+  
+  // Realm Geometry
+  realmType: number;
+  activeRealm: string;
+  dnaSeed: string;
+  particleCount: number;
 
-  isPlaying: false,
-  currentTrack: null,
-  volume: 0.8,
-  analyser: null,
-  setTrack: (track) => set({ currentTrack: track, isPlaying: true }),
-  setAnalyser: (analyser) => set({ analyser }),
-  togglePlay: (val) => set((state) => ({ isPlaying: val !== undefined ? val : !state.isPlaying })),
+  // Actions
+  setAuth: (user: any, profile: any) => void;
+  addXp: (amount: number) => void;
+  setTrack: (track: Track) => void;
+  togglePlay: (state?: boolean) => void;
+  setVolume: (val: number) => void;
+  setAnalyser: (node: AnalyserNode) => void;
+  setRealm: (type: number, trackName: string) => void;
+}
 
-  activeRealm: "NEURAL_VOID",
-  realmType: 0,
-  dnaSeed: "0x000000",
-  particleCount: 15000,
-  setRealm: (type, title) => {
-    // Generate a hex seed based on the song title
-    let hash = 0;
-    for (let i = 0; i < title.length; i++) {
-      hash = title.charCodeAt(i) + ((hash << 5) - hash);
+export const useStore = create<NeuralState>()(
+  persist(
+    (set, get) => ({
+      // Initial State
+      user: null,
+      profile: null,
+      dna_xp: 0,
+      currentTrack: null,
+      isPlaying: false,
+      volume: 0.8,
+      analyser: null,
+      realmType: 0,
+      activeRealm: 'NEURAL_CORE',
+      dnaSeed: '0x000000',
+      particleCount: 15000,
+
+      // Actions
+      setAuth: (user, profile) => set({ user, profile }),
+      
+      addXp: (amount) => set((state) => ({ dna_xp: state.dna_xp + amount })),
+
+      setTrack: (track) => {
+        // Generate a hex seed based on track title
+        const seed = '0x' + Array.from(track.title)
+          .reduce((acc, char) => acc + char.charCodeAt(0), 0)
+          .toString(16).padStart(6, '0');
+        
+        set({ currentTrack: track, dnaSeed: seed, isPlaying: true });
+      },
+
+      togglePlay: (state) => set((prev) => ({ 
+        isPlaying: state !== undefined ? state : !prev.isPlaying 
+      })),
+
+      setVolume: (val) => set({ volume: val }),
+
+      setAnalyser: (node) => set({ analyser: node }),
+
+      setRealm: (type, trackName) => {
+        const realms = [
+          'TORUS_KNOT', 'DNA_ARCHIVE', 'QUANTUM_FOAM', 'NEURAL_GRID',
+          'VOID_SPHERE', 'HYPER_TUBE', 'DATA_STREAM', 'PULSE_WAVE',
+          'COSMIC_DUST', 'SILICON_VALLEY', 'VECTOR_FIELD', 'QUANTUM_PRINGLE'
+        ];
+        set({ realmType: type, activeRealm: realms[type] || 'UNKNOWN_SECTOR' });
+      },
+    }),
+    {
+      name: 'neural-vault-storage', // Key in LocalStorage
+      storage: createJSONStorage(() => localStorage),
+      // Only persist these specific fields (Don't persist the AnalyserNode or Audio state)
+      partialize: (state) => ({ 
+        dna_xp: state.dna_xp,
+        realmType: state.realmType,
+        activeRealm: state.activeRealm,
+        volume: state.volume,
+        dnaSeed: state.dnaSeed
+      }),
     }
-    const seed = `0x${Math.abs(hash).toString(16).toUpperCase().slice(0, 6)}`;
-    set({ realmType: type, activeRealm: title, dnaSeed: seed });
-  },
-
-  isPosterMode: false,
-  activeTab: 'visualizer',
-  setTab: (tab) => set({ activeTab: tab }),
-}));
+  )
+);
