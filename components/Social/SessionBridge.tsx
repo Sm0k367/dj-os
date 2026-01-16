@@ -3,29 +3,29 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useStore } from '@/store/useStore';
-import { Users, Radio, Activity } from 'lucide-react';
+import { Radio, Loader2, HardDrive } from 'lucide-react';
 
 export default function SessionBridge({ sessionId = 'global-vault' }) {
   const { setTrack, setRealm, currentTrack, realmType, isPlaying } = useStore();
   const [peerCount, setPeerCount] = useState(0);
+  const [isConfigured, setIsConfigured] = useState(true);
 
   useEffect(() => {
-    // 1. Initialize the Realtime Channel
+    // 1. Safety Check: If supabase is our Proxy object, abort Realtime
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      setIsConfigured(false);
+      return;
+    }
+
     const channel = supabase.channel(sessionId, {
       config: { presence: { key: 'user' } }
     });
 
-    // 2. Listen for Broadcast Events (Syncing Visuals/Audio)
     channel
       .on('broadcast', { event: 'sync_state' }, ({ payload }) => {
-        if (payload.track.id !== currentTrack?.id) {
-          setTrack(payload.track);
-        }
-        if (payload.realm !== realmType) {
-          setRealm(payload.realm, payload.track.title);
-        }
+        if (payload.track.id !== currentTrack?.id) setTrack(payload.track);
+        if (payload.realm !== realmType) setRealm(payload.realm, payload.track.title);
       })
-      // 3. Presence Tracking (Who's online?)
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
         setPeerCount(Object.keys(state).length);
@@ -39,9 +39,9 @@ export default function SessionBridge({ sessionId = 'global-vault' }) {
     return () => { channel.unsubscribe(); };
   }, [sessionId, currentTrack, realmType, setTrack, setRealm]);
 
-  // 4. Broadcast local changes to the group (Only if playing)
+  // Only broadcast if we have a valid connection
   useEffect(() => {
-    if (isPlaying) {
+    if (isPlaying && isConfigured) {
       const channel = supabase.channel(sessionId);
       channel.send({
         type: 'broadcast',
@@ -49,19 +49,31 @@ export default function SessionBridge({ sessionId = 'global-vault' }) {
         payload: { track: currentTrack, realm: realmType }
       });
     }
-  }, [currentTrack, realmType, isPlaying, sessionId]);
+  }, [currentTrack, realmType, isPlaying, sessionId, isConfigured]);
 
   return (
     <div className="fixed bottom-32 left-6 z-40 pointer-events-none">
-      <div className="glass-panel px-4 py-2 rounded-full flex items-center gap-3 animate-pulse">
-        <div className="relative">
-          <Radio size={14} className="text-neon" />
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-neon rounded-full" />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[9px] font-bold text-neon uppercase tracking-tighter">Live_Sync</span>
-          <span className="text-[8px] text-white/40 uppercase font-mono">{peerCount} Nodes_Connected</span>
-        </div>
+      <div className="glass-panel px-4 py-2 rounded-full flex items-center gap-3">
+        {isConfigured ? (
+          <>
+            <div className="relative">
+              <Radio size={14} className="text-neon animate-pulse" />
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-neon rounded-full" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[9px] font-bold text-neon uppercase tracking-tighter">Live_Sync</span>
+              <span className="text-[8px] text-white/40 uppercase font-mono">{peerCount} Nodes_Active</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <HardDrive size={14} className="text-amber-500" />
+            <div className="flex flex-col">
+              <span className="text-[9px] font-bold text-amber-500 uppercase tracking-tighter">Local_Engine</span>
+              <span className="text-[8px] text-white/40 uppercase font-mono">Cloud_Link_Inactive</span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
