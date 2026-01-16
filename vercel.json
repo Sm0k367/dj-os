@@ -3,19 +3,6 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": {
-      "description": "[OPTIONAL] Leave blank to run without Supabase"
-    },
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": {
-      "description": "[OPTIONAL] Leave blank to run without Supabase"
-    }
-  },
-  "functions": {
-    "api/**/*.ts": {
-      "maxDuration": 60
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
