@@ -1,69 +1,45 @@
-# 🌌 NEURAL_VAULT_OS // MULTIVERSE_ENGINE
-> **Status:** OPERATIONAL // **Version:** 10.0.4-LTS
-> A procedural 3D multiverse for audio-reactive digital DNA.
+# 🌌 DJ-OS // NEURAL_VAULT_ENGINE
+
+![License](https://img.shields.io/github/license/Sm0k367/dj-os?color=00f2ff&style=flat-square)
+![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)
+![Three.js](https://img.shields.io/badge/Three.js-r157-00f2ff?style=flat-square)
+
+> **[SYSTEM_STATUS: OPERATIONAL]**
+> A procedural 3D multiverse for audio-reactive digital DNA. Transform sound into geometry.
 
 ---
 
-## ⚡ CORE OBJECTIVE
-Neural_Vault is a high-performance WebGL application that transforms audio frequency data into 12+ procedural mathematical realms. It generates a unique "DNA Seed" for every track, allowing users to capture and share their sonic discoveries as high-definition digital posters.
+## ⚡ THE VISION
+DJ-OS is not just a music player; it is a **Neural Operating System**. It uses the Web Audio API to extract real-time frequency data from tracks, feeding that data into a custom-built 3D engine. Every track generates a unique "DNA Seed" that morphs the environment across 12+ mathematical realms.
 
-## 🛠 TECH_STACK
-- **Engine:** Next.js 14 (App Router)
-- **Visuals:** React Three Fiber (Three.js) + GLSL Shaders
-- **State:** Zustand (High-frequency state management)
-- **Backend:** Supabase (Auth + PostgreSQL + Realtime Sync)
-- **Styling:** Tailwind CSS + Framer Motion (Glassmorphism HUD)
+
+
+## 🛠 TECH ARCHITECTURE
+* **Frontend:** [Next.js 14](https://nextjs.org/) (App Router) for high-performance hydration.
+* **3D Engine:** [@react-three/fiber](https://docs.pmnd.rs/react-three-fiber) & [Three.js](https://threejs.org/) using `Float32Array` for GPU-accelerated particle systems.
+* **State Management:** [Zustand](https://github.com/pmndrs/zustand) for low-latency sync between audio nodes and 3D uniforms.
+* **Aesthetics:** Tailwind CSS + Framer Motion for the "Neon-Glass" HUD.
+* **Backend:** [Supabase](https://supabase.com/) for Realtime sync, Auth, and the Community Poster Archive.
 
 ---
 
-## 🧬 PROCEDURAL_REALMS
-The engine supports 12+ mathematical mappings, including:
+## 🧬 PROCEDURAL REALMS
+The engine features 12+ unique mathematical mappings determined by the track's DNA:
 - **0x00 Torus Knot:** Braided orbital particles.
 - **0x02 DNA Archive:** Double-helix structural mapping.
 - **0x08 Quantum Foam:** Wave-particle duality simulation.
 - **0x11 Quantum Pringle:** Hyperbolic paraboloid geometry.
 
+
+
 ## 🚀 INSTALLATION_SEQUENCE
 
-1. **Clone the Neural Link:**
-   ```bash
-   git clone [https://github.com/your-username/neural-vault-os.git](https://github.com/your-username/neural-vault-os.git)
-   cd neural-vault-os
-Inject Dependencies:
-
-Bash
-
+### 1. Initialize the Environment
+```bash
+git clone [https://github.com/Sm0k367/dj-os.git](https://github.com/Sm0k367/dj-os.git)
+cd dj-os
 npm install
-Configure Environment: Create a .env.local file with your Supabase credentials:
-
-Code snippet
-
-NEXT_PUBLIC_SUPABASE_URL=your_project_url
+2. Configure Neural UplinkCreate a .env.local in the root directory:Code snippetNEXT_PUBLIC_SUPABASE_URL=your_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-Ignite Engine:
-
-Bash
-
-npm run dev
-📡 SYSTEM_ARCHITECTURE
-/components/NeuralCanvas: The WebGL heartbeat. Handles particle interpolation and audio-reactivity.
-
-/lib/realmCalculations: The mathematical core. Contains the trigonometry for all 12+ realms.
-
-/store/useStore: The central nervous system. Syncs audio nodes with 3D uniforms.
-
-/components/PosterGenerator: The viral engine. Captures 1080p snapshots for social sharing.
-
-🛡 ARCHITECT_ACCESS
-To enable God Mode (Realm Editor) and Community Gallery features, users must establish a Neural Identity via the integrated Supabase Auth module.
-
-[ DEVELOPED_BY_DJ_SMOKE_STREAM ] Exploring the intersection of Sound, Math, and the Void.
-
-
----
-
-### Pro-Tip for your GitHub:
-In your GitHub Repo settings, add the following **Topics**:
-`threejs`, `react-three-fiber`, `supabase`, `web-audio-api`, `generative-art`, `nextjs`.
-
-**Your GitHub structure is now complete.**
+3. Ignite EngineBashnpm run dev
+📡 KEY MODULESModuleDescriptionNeuralCanvas.tsxThe WebGL heartbeat. Handles particle interpolation and physics.AudioEngine.tsxInvisible controller managing AudioContext and AnalyserNode.realmCalculations.tsThe "Math Core". Trigonometric formulas for all 12 realms.PosterGenerator.tsxViral engine. Composites 1080p snapshots for social sharing.🛡 ARCHITECT ACCESSUsers who authenticate via the Neural Identity gateway can:Manual Override: Use the Architect Tools to manually manipulate realm variables.Archive DNA: Save generated posters to the Community Gallery.Sync Session: Host real-time "Neural Raves" where others see your visualizer state.🤝 CONTRIBUTINGSystem logs indicate room for more realms. If you have a mathematical formula that generates beautiful geometry, feel free to open a PR in lib/realmCalculations.ts.DEVELOPED_BY_SM0K367 Exploring the intersection of Sound, Math, and the Void.
