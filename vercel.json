@@ -6,10 +6,10 @@
   "nodeVersion": "20.x",
   "env": {
     "NEXT_PUBLIC_SUPABASE_URL": {
-      "description": "Supabase project URL"
+      "description": "[OPTIONAL] Supabase project URL - leave blank to run without Supabase"
     },
     "NEXT_PUBLIC_SUPABASE_ANON_KEY": {
-      "description": "Supabase anonymous key"
+      "description": "[OPTIONAL] Supabase anonymous key - leave blank to run without Supabase"
     }
   },
   "build": {
