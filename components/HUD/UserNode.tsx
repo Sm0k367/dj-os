@@ -3,34 +3,42 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/lib/supabase';
-import { User, ShieldAlert, ShieldCheck, LogOut } from 'lucide-react';
+import { User, ShieldAlert, ShieldCheck, LogOut, HardDrive } from 'lucide-react';
 import AuthModal from '../Auth/AuthModal';
 
 export default function UserNode() {
-  const { user, profile, setAuth } = useStore();
+  const { user, dna_xp, profile, setAuth } = useStore();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState(false);
 
-  // Sync Auth State on Load
+  // 1. Check if Supabase is actually configured
   useEffect(() => {
-    const syncUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Fetch profile data (XP, Stats)
-        const { data: prof } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        setAuth(user, prof);
+    const checkConnectivity = async () => {
+      // If supabase is a Proxy (from our previous file change), this will fail silently
+      try {
+        const { data: { user: sbUser } } = await supabase.auth.getUser();
+        if (sbUser) {
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', sbUser.id)
+            .single();
+          setAuth(sbUser, prof);
+          setIsOnline(true);
+        }
+      } catch (e) {
+        setIsOnline(false);
       }
     };
-    syncUser();
+    checkConnectivity();
   }, [setAuth]);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {}
     setAuth(null, null);
-    window.location.reload(); // Hard reset for security
+    window.location.reload();
   };
 
   return (
@@ -52,21 +60,25 @@ export default function UserNode() {
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold uppercase tracking-widest">
-              {user ? (profile?.username || 'ARCHITECT') : 'GUEST_USER'}
+              {user ? (profile?.username || 'ARCHITECT') : 'LOCAL_GUEST'}
             </span>
-            {user ? <ShieldCheck size={10} className="text-neon" /> : <ShieldAlert size={10} className="text-red-500" />}
+            {isOnline ? (
+              <ShieldCheck size={10} className="text-neon" title="Cloud Synced" />
+            ) : (
+              <HardDrive size={10} className="text-amber-500" title="Local Storage Mode" />
+            )}
           </div>
           
-          {user ? (
-            <div className="flex items-center gap-2">
-              <div className="h-1 w-16 bg-white/10 rounded-full overflow-hidden">
-                <div className="h-full bg-neon w-[65%]" /> {/* Static XP bar for now */}
-              </div>
-              <span className="text-[8px] text-neon font-mono">XP: {profile?.dna_xp || 0}</span>
+          <div className="flex items-center gap-2">
+            <div className="h-1 w-16 bg-white/10 rounded-full overflow-hidden">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min((dna_xp % 100), 100)}%` }}
+                className="h-full bg-neon" 
+              />
             </div>
-          ) : (
-            <span className="text-[8px] text-white/20 uppercase">Auth_Required</span>
-          )}
+            <span className="text-[8px] text-neon font-mono">XP: {dna_xp}</span>
+          </div>
         </div>
 
         {user && (
